@@ -143,7 +143,7 @@ bool retro_load_game(const struct retro_game_info *info)
 
    // Check if there is content to load.
    if (info != NULL && info->path != NULL && info->path[0] != '\0') {
-      sprintf(command, "%s --fullscreen --nogui \"%s\"", command, info->path);
+      sprintf(command + strlen(command), " --fullscreen --nogui \"%s\"", info->path);
    }
 
    // Check if running Dolphin works.
@@ -152,12 +152,24 @@ bool retro_load_game(const struct retro_game_info *info)
       return true;
    }
 
+   // PCSX2-qt
+   printf("libretro-pcsx2-launcher: PCSX2 not found. Attempting PCSX2-qt...\n");
+   strcpy(command, "pcsx2-qt");
+   if (info != NULL && info->path != NULL && info->path[0] != '\0') {
+      // Execute with -batch.
+      sprintf(command + strlen(command), " -fullscreen -batch \"%s\"", info->path);
+   }
+   if (system(command) == 0) {
+      printf("libretro-pcsx2-launcher: Finished running PCSX2-qt.\n");
+      return true;
+   }
+
    // Flatpak
    printf("libretro-pcsx2-launcher: PCSX2 not found. Attempting Flatpak...\n");
    strcpy(command, "flatpak run net.pcsx2.PCSX2");
    if (info != NULL && info->path != NULL && info->path[0] != '\0') {
       // Execute with --batch.
-      sprintf(command, "%s --fullscreen --nogui \"%s\"", command, info->path);
+      sprintf(command + strlen(command), " --fullscreen --nogui \"%s\"", info->path);
    }
    if (system(command) == 0) {
       printf("libretro-pcsx2-launcher: Finished running PCSX2 through Flatpak.\n");
